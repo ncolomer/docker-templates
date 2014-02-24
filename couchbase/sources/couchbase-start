@@ -12,7 +12,7 @@ function untilsuccessful() {
 IP=`hostname --ip-address`
 SEED=$1
 
-# Start Couchbase background
+# Start Couchbase in background
 su - couchbase -c "/opt/couchbase/bin/couchbase-server -- -noinput" &
 PID=$!
 
@@ -27,7 +27,10 @@ else
 	untilsuccessful couchbase-cli cluster-init -c $IP \
 		--cluster-init-username=$CB_USERNAME \
 		--cluster-init-password=$CB_PASSWORD
+	untilsuccessful couchbase-cli bucket-create -c $IP \
+		-u $CB_USERNAME -p $CB_PASSWORD \
+		--bucket=default --bucket-ramsize=128
 fi
 
-# Re-attach Couchbase process
+# Wait indefinitely on Couchbase process
 wait $PID
