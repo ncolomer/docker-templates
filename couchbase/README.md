@@ -1,8 +1,8 @@
 
 # Couchbase Docker container
 
-This is a collection of images and scripts to help you run Couchbase 2.2 in Docker containers.
-This image is great to provision ephemeral Couchbase topologies for testing and development purpose.
+This is a collection of images and scripts to help you run Couchbase 2.2.0 community edition (build-837) in Docker containers.
+Docker containers are great to provision ephemeral topologies for testing and development purpose.
 This project was partly inspired by [dustin/couchbase](https://gist.github.com/dustin/6605182).
 
 ## Prerequisites
@@ -29,7 +29,7 @@ Finally, restart the Docker daemon: `/etc/init.d/docker restart`.
 
 	Using Telnet (Memcached text protocol)
 
-		$ telnet localhost
+		$ telnet $(./scripts/ipof cb)
 		# Check health
 		stats
 		# Set and get a key
@@ -40,13 +40,14 @@ Finally, restart the Docker daemon: `/etc/init.d/docker restart`.
 
 	Using `couchbase-cli`
 
-		docker run -d -name cb ncolomer/couchbase couchbase-cli server-info -c $(./scripts/ipof cb)
+		docker run -rm ncolomer/couchbase couchbase-cli server-info -c $(./scripts/ipof cb) -uAdministrator -pcouchbase
 
 	Using HTTP
 
-		curl -u Administrator:couchbase http://$(./scripts/ipof cb):8091/pools/default/buckets/default/nodes
+		curl -u Administrator:couchbase http://$(./scripts/ipof cb):8091/nodes/ns_1@127.0.0.1
 
-	Using admin interface: open the output of `echo http://$(./scripts/ipof cb):8091` in your favorite browser.
+	Using admin interface: open the output of `echo http://$(./scripts/ipof cb):8091` in your favorite browser. 
+	The admin login is `Administrator` and the password is `couchbase`.
 
 ## 3-node cluster
 
@@ -67,10 +68,13 @@ Create the containers as following:
 	docker run -d $(./scripts/ports) -name cb21 ncolomer/couchbase
 	docker run -d -name cb22 ncolomer/couchbase couchbase-start $(./scripts/ipof cb21)
 
-Then open the URL `http://$CB11_URL:8091` (replace `$CB11_URL` by the output of `./scripts/ipof cb11`) in your favorite browser and create the XDCR as described in the [Set Source and Destination Clusters](http://docs.couchbase.com/couchbase-manual-2.2/#set-source-and-destination-clusters) documentation page.
-You will have to provide at lease one IP of a node in the second cluster, the IP `./scripts/ipof cb21` is a good choice.
+The node `cb12` automatically joins the cluster #1 via `cb11` and the node `cb22` automatically joins the cluster #2 via `cb11`.
 
-## Routing magic
+* Open the URL `http://$CB11_URL:8091` (replace `$CB11_URL` by the output of `./scripts/ipof cb11`) in your favorite browser
+* Setup the XDCR as described in the [Set Source and Destination Clusters](http://docs.couchbase.com/couchbase-manual-2.2/#set-source-and-destination-clusters) documentation page. You will have to provide at lease one IP of a node in the cluster #2, the IP returned by `./scripts/ipof cb21` is a good choice.
+* Note you can also do all this stuff using command line. See the documentation for the details.
+
+## Some routing magic
 
 If you host Docker on a Virtual Machine (a Vagrant managed VM for instance), you can make docker containers reachable from your VM's host by routing request to the docker bridge:
 
