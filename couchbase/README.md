@@ -1,4 +1,3 @@
-
 # Couchbase Docker container
 
 This is a collection of images and scripts to help you run Couchbase 2.2.0 community edition (build-837) in Docker containers.
@@ -30,7 +29,7 @@ Finally, restart the Docker daemon: `/etc/init.d/docker restart`.
 
 	Using Telnet (Memcached text protocol)
 
-		$ telnet $(./scripts/ipof cb)
+		$ telnet $(./scripts/ipof cb) 11211
 		# Check health
 		stats
 		# Set and get a key
@@ -58,7 +57,11 @@ Create the containers as following:
 	docker run -d -name cb2 ncolomer/couchbase couchbase-start $(./scripts/ipof cb1)
 	docker run -d -name cb3 ncolomer/couchbase couchbase-start $(./scripts/ipof cb1)
 
-The nodes `cb2` and `cb3` will automatically join the cluster via `cb1`.
+The nodes `cb2` and `cb3` will automatically join the cluster via `cb1`. The cluster needs a rebalance to be fully operationnal. To do so, run the following command:
+
+	docker run -rm ncolomer/couchbase couchbase-cli rebalance -c $(./scripts/ipof cb1) -u Administrator -p couchbase
+
+Note that you can also trigger a rebalance and show progress from the admin interface.
 
 ## Two 2-node cluster (XDCR base)
 
@@ -69,7 +72,10 @@ Create the containers as following:
 	docker run -d $(./scripts/ports) -name cb21 ncolomer/couchbase
 	docker run -d -name cb22 ncolomer/couchbase couchbase-start $(./scripts/ipof cb21)
 
-The node `cb12` automatically joins the cluster #1 via `cb11` and the node `cb22` automatically joins the cluster #2 via `cb11`.
+The node `cb12` automatically joins the cluster #1 via `cb11` and the node `cb22` automatically joins the cluster #2 via `cb11`. The clusters #1 and #2 both need a rebalance to be fully operationnal. To do so, run the following commands:
+
+	docker run -rm ncolomer/couchbase couchbase-cli rebalance -c $(./scripts/ipof cb11) -u Administrator -p couchbase
+	docker run -rm ncolomer/couchbase couchbase-cli rebalance -c $(./scripts/ipof cb21) -u Administrator -p couchbase
 
 * Open the URL `http://$CB11_URL:8091` (replace `$CB11_URL` by the output of `./scripts/ipof cb11`) in your favorite browser
 * Setup the XDCR as described in the [Set Source and Destination Clusters](http://docs.couchbase.com/couchbase-manual-2.2/#set-source-and-destination-clusters) documentation page. You will have to provide at lease one IP of a node in the cluster #2, the IP returned by `./scripts/ipof cb21` is a good choice.
