@@ -14,6 +14,7 @@ SEED=$1
 
 # Start Couchbase background
 su - couchbase -c "/opt/couchbase/bin/couchbase-server -- -noinput" &
+PID=$!
 
 # Init Couchbase
 if [ -n "$SEED" ]; then
@@ -29,4 +30,4 @@ else
 fi
 
 # Re-attach Couchbase process
-fg
+wait $PID
