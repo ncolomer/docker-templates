@@ -1,0 +1,9 @@
+#!/bin/sh
+
+IP=`hostname --ip-address`
+while true; do
+	couchbase-cli server-info -c $IP \
+		--user=$CB_USERNAME \
+		--password=$CB_PASSWORD
+	sleep 2
+done
