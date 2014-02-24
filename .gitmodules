@@ -1,3 +1,0 @@
-[submodule "cassandra"]
-	path = cassandra
-	url = https://github.com/pokle/cassandra.git
