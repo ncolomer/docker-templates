@@ -12,21 +12,21 @@ function untilsuccessful() {
 IP=`hostname --ip-address`
 SEED=$1
 
-# Start Couchbase
-/etc/init.d/couchbase-server start
+# Start Couchbase background
+su - couchbase -c "/opt/couchbase/bin/couchbase-server -- -noinput" &
 
 # Init Couchbase
 if [ -n "$SEED" ]; then
-	echo "Starting Couchbase ($IP) and joining cluster via $SEED"
+	echo "Make Couchbase ($IP) join the cluster via $SEED"
 	untilsuccessful couchbase-cli server-add -c $SEED \
 		--user=$CB_USERNAME --password=$CB_PASSWORD \
 		--server-add=$IP
 else
-	echo "Starting Couchbase ($IP) as new cluster"
+	echo "Make Couchbase ($IP) the first cluster node"
 	untilsuccessful couchbase-cli cluster-init -c $IP \
 		--cluster-init-username=$CB_USERNAME \
 		--cluster-init-password=$CB_PASSWORD
 fi
 
-# Start watchdog on server status
-couchbase-watch
+# Re-attach Couchbase process
+fg

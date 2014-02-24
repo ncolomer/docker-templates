@@ -18,7 +18,6 @@ RUN ln -s /opt/couchbase/bin/couchbase-cli /usr/local/bin/
 
 # Put start script
 ADD sources/couchbase-start /usr/local/bin/
-ADD sources/couchbase-watch /usr/local/bin/
 
 # See http://docs.couchbase.com/couchbase-manual-2.5/cb-install/#xdcr
 EXPOSE 8091 8092 11210 11211
